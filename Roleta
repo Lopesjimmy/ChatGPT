@@ -1,0 +1,2507 @@
+# ============================ IMPORTANDO BIBLIOTECAS E FUNÇÕES UTILIZADAS ============================================
+# =====================================================================================================================
+
+from time import sleep, time
+from PIL import Image
+import pyautogui
+from pyautogui import os, locateOnScreen, locateCenterOnScreen, size
+from PIL import Image
+import cv2
+import pytesseract
+import math
+
+# ============================ CONDIÇÕES BINÁRIAS =====================================================================
+# =====================================================================================================================
+
+# ============================ Separação Por Cores ====================================================================
+vermelho = (1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
+preto = (2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35)
+
+# ============================ Separação Alto/Baixo ===================================================================
+baixo = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
+alto = (19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36)
+
+# ============================ Separação Par/Impar ====================================================================
+impar = (1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35)
+par = (2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36)
+
+
+# ============================ CONTROLE DE CONDIÇÕES DE ENTRADA E VALORES DAS APOSTAS =================================
+# =====================================================================================================================
+
+qtd_jogos = 0
+qtd_n_preto = 0
+qtd_n_vermelho = 0
+qtd_n_par = 0
+qtd_n_impar = 0
+qtd_n_baixo = 0
+qtd_n_alto = 0
+qtd_n_direta = 0
+
+num2 = int(input('Qual o penúltimo número que saiu? '))
+num1 = int(input('Qual o último número que saiu? '))
+mult = int(input('Qual o multiplicador? '))
+
+tentativas = 0
+
+# ============================ LOCALIZAÇÃO FICHAS, APOSTAS E LUGARES ==================================================
+# =====================================================================================================================
+
+f12k5 = pyautogui.position(842, 723)
+f2500 = pyautogui.position(796, 720)
+f500 = pyautogui.position(749, 721)
+f125 = pyautogui.position(706, 720)
+f25 = pyautogui.position(660, 720)
+f5 = pyautogui.position(614, 722)
+f2e5 = pyautogui.position(568, 721)
+f0e5 = pyautogui.position(524, 717)
+
+p_baixo = pyautogui.position(137, 633)
+p_par = pyautogui.position(267, 634)
+p_vermelho = pyautogui.position(395, 634)
+p_preto = pyautogui.position(521, 632)
+p_impar = pyautogui.position(647, 631)
+p_alto = pyautogui.position(772, 633)
+
+direta = (pyautogui.position(49, 507), pyautogui.position(109, 549), pyautogui.position(110, 507),
+          pyautogui.position(108, 462), pyautogui.position(174, 551), pyautogui.position(172, 507),
+          pyautogui.position(171, 461), pyautogui.position(236, 552), pyautogui.position(235, 506),
+          pyautogui.position(234, 463), pyautogui.position(298, 550), pyautogui.position(299, 509),
+          pyautogui.position(298, 462), pyautogui.position(364, 551), pyautogui.position(361, 505),
+          pyautogui.position(362, 461), pyautogui.position(425, 550), pyautogui.position(425, 507),
+          pyautogui.position(424, 462), pyautogui.position(486, 551), pyautogui.position(488, 506),
+          pyautogui.position(490, 462), pyautogui.position(552, 552), pyautogui.position(552, 507),
+          pyautogui.position(552, 457), pyautogui.position(617, 550), pyautogui.position(615, 507),
+          pyautogui.position(616, 463), pyautogui.position(680, 551), pyautogui.position(680, 507),
+          pyautogui.position(681, 461), pyautogui.position(744, 552), pyautogui.position(745, 505),
+          pyautogui.position(743, 462), pyautogui.position(807, 551), pyautogui.position(808, 503),
+          pyautogui.position(808, 460))
+
+
+# ============================ JOGANDO ================================================================================
+# =====================================================================================================================
+
+
+# ============================ Identificação do Número Sorteado =======================================================
+
+while True:
+    if locateOnScreen('Sessao_expirada.PNG', confidence=0.5, region=(852, 300, 210, 60)):
+        pyautogui.press('F5')
+        sleep(1)
+        jogar = locateCenterOnScreen('Jogar.PNG', confidence=0.5, region=(932, 487, 104, 45))
+        sleep(1)
+        pyautogui.moveTo(jogar)
+        sleep(1)
+        pyautogui.click()
+        sleep(1)
+        maximizar = locateCenterOnScreen('Maximizar.PNG', confidence=0.5)
+        sleep(1)
+        pyautogui.moveTo(maximizar)
+        sleep(1)
+        pyautogui.click()
+        sleep(1)
+        pyautogui.moveTo(1612, 28)
+        sleep(1)
+        pyautogui.click()
+
+    elif not locateOnScreen('PlaceBet2.PNG', confidence=0.6, region=(550, 365, 200, 50)):
+        tentativas += 1
+
+    else:
+        num3 = num2
+        num2 = num1
+        mult0 = mult
+
+        pyautogui.screenshot('screenshot.PNG', region=(85, 1043, 165, 30))
+        imagem = cv2.imread('screenshot.PNG')
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Users\thiag\AppData\Local\Tesseract-OCR\Tesseract.exe"
+        resultado = pytesseract.image_to_string(imagem)
+        valor = resultado.replace('R$', '')
+        valor2 = valor.replace(',', '')
+        dig = len(valor2.strip())
+        if math.trunc(int(valor2[:dig - 2]) / 4096) < 1:
+            mult = 1
+        elif math.trunc(int(valor2[:dig - 2]) / 4096) < mult0:
+            mult = mult0
+        else:
+            mult = math.trunc(int(valor2[:dig - 2]) / 4096)
+
+        if locateOnScreen('26-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 26
+        elif locateOnScreen('34-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 34
+        elif locateOnScreen('18-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 18
+        elif locateOnScreen('30-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 30
+        elif locateOnScreen('33-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 33
+        elif locateOnScreen('36-2.PNG', confidence=0.95, region=(983, 97, 35, 20)):
+            num1 = 36
+        elif locateOnScreen('17-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 17
+        elif locateOnScreen('08-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 8
+        elif locateOnScreen('07-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 7
+        elif locateOnScreen('06-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 6
+        elif locateOnScreen('00-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 0
+        elif locateOnScreen('35-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 35
+        elif locateOnScreen('05-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 5
+        elif locateOnScreen('09-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 9
+        elif locateOnScreen('02-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 2
+        elif locateOnScreen('03-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 3
+        elif locateOnScreen('04-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 4
+        elif locateOnScreen('10-2.PNG', confidence=0.90, region=(983, 97, 35, 20)):
+            num1 = 10
+        elif locateOnScreen('01-2.PNG', confidence=0.80, region=(983, 97, 35, 20)):
+            num1 = 1
+        else:
+            pyautogui.screenshot('screenshot.PNG', region=(983, 97, 35, 20))
+            imagem = cv2.imread('screenshot.PNG')
+            pytesseract.pytesseract.tesseract_cmd = r"C:\Users\thiag\AppData\Local\Tesseract-OCR\Tesseract.exe"
+            resultado = pytesseract.image_to_string(imagem)
+            num1 = int(resultado)
+
+# ============================ Enquadramento do Número 1 Sorteado em Condições Binárias ===============================
+        if num1 == 0:
+            qtd_n_alto += 1
+            qtd_n_baixo += 1
+            qtd_n_impar += 1
+            qtd_n_par += 1
+            qtd_n_preto += 1
+            qtd_n_vermelho += 1
+            qtd_jogos += 1
+            print('\033[7;32;40m {} \033[m'.format(num1))
+        else:
+            if vermelho.count(num1) > 0:
+                qtd_n_preto += 1
+                qtd_n_vermelho = 0
+                qtd_jogos += 1
+                print('\033[1;30;41m {} \033[m'.format(num1))
+            else:
+                qtd_n_preto = 0
+                qtd_n_vermelho += 1
+                qtd_jogos += 1
+                print('\033[1;40m {} \033[m'.format(num1))
+
+            if baixo.count(num1) > 0:
+                qtd_n_alto += 1
+                qtd_n_baixo = 0
+            else:
+                qtd_n_alto = 0
+                qtd_n_baixo += 1
+
+            if impar.count(num1) > 0:
+                qtd_n_impar = 0
+                qtd_n_par += 1
+            else:
+                qtd_n_par = 0
+                qtd_n_impar += 1
+
+        if num1 == num2 or num1 == num3:
+            qtd_n_direta = 0
+        else:
+            qtd_n_direta += 1
+
+# ============================ Apostas binários =======================================================================
+
+# =====================================================================================================================
+# ============================ BAIXO ==================================================================================
+# =====================================================================================================================
+        if qtd_n_baixo >= 7:
+
+# ============================ 2048 ===================================================================================
+            if qtd_n_baixo == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_baixo == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_baixo == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_baixo == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_baixo == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_baixo == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_baixo == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_baixo == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_baixo == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_baixo == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_baixo == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_baixo == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_baixo == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_baixo)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+
+# =====================================================================================================================
+# ============================ PAR ====================================================================================
+# =====================================================================================================================
+
+        if qtd_n_par >= 7:
+
+# ============================ 2048 ===================================================================================
+            if qtd_n_par == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_par == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_par == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_par == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_par == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_par == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_par == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_par == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_par == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_par == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_par == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_par == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_par == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_par)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+# =====================================================================================================================
+# ============================ VERMELHO ===============================================================================
+# =====================================================================================================================
+
+        if qtd_n_vermelho >= 7:
+# ============================ 2048 ===================================================================================
+            if qtd_n_vermelho == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_vermelho == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_vermelho == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_vermelho == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_vermelho == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_vermelho == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_vermelho == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_vermelho == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_vermelho == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_vermelho == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_vermelho == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_vermelho == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_vermelho == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_vermelho)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+
+# =====================================================================================================================
+# ============================ PRETO ==================================================================================
+# =====================================================================================================================
+
+        if qtd_n_preto >= 7:
+# ============================ 2048 ===================================================================================
+            if qtd_n_preto == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_preto == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_preto == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_preto == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_preto == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_preto == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_preto == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_preto == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_preto == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_preto == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_preto == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_preto == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_preto == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_preto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+
+# =====================================================================================================================
+# ============================ ÍMPAR ==================================================================================
+# =====================================================================================================================
+
+        if qtd_n_impar >= 7:
+# ============================ 2048 ===================================================================================
+            if qtd_n_impar == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_impar == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_impar == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_impar == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_impar == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_impar == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_impar == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_impar == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_impar == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_impar == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_impar == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_impar == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_impar == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_impar)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+
+# =====================================================================================================================
+# ============================ ALTO ===================================================================================
+# =====================================================================================================================
+
+        if qtd_n_alto >= 7:
+# ============================ 2048 ===================================================================================
+            if qtd_n_alto == 19:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1024 ===================================================================================
+            elif qtd_n_alto == 18:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 512 ====================================================================================
+            elif qtd_n_alto == 17:
+                pyautogui.moveTo(f500)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 256 ====================================================================================
+            elif qtd_n_alto == 16:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 128 ====================================================================================
+            elif qtd_n_alto == 15:
+                pyautogui.moveTo(f125)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+            elif qtd_n_alto == 14:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+            elif qtd_n_alto == 13:
+                pyautogui.moveTo(f25)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+            elif qtd_n_alto == 12:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 08 =====================================================================================
+            elif qtd_n_alto == 11:
+                pyautogui.moveTo(f5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 04 =====================================================================================
+            elif qtd_n_alto == 10:
+                pyautogui.moveTo(f2e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 02 =====================================================================================
+            elif qtd_n_alto == 9:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 01 =====================================================================================
+            elif qtd_n_alto == 8:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 0,5 ====================================================================================
+            elif qtd_n_alto == 7:
+                pyautogui.moveTo(f0e5)
+                pyautogui.click()
+                pyautogui.moveTo(p_alto)
+                pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ Zerando a banca ========================================================================
+            else:
+                print('Perdi tudo =(')
+                break
+
+# =====================================================================================================================
+# ============================ DIRETAS ================================================================================
+# =====================================================================================================================
+
+
+# ============================ 0,5 ====================================================================================
+        if qtd_n_direta <= 17:
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 1 ======================================================================================
+        elif 18 <= qtd_n_direta <= 26:
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 1,5 ====================================================================================
+        elif 27 <= qtd_n_direta <= 33:
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 2 ======================================================================================
+        elif 34 <= qtd_n_direta <= 37:
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 2,5 ====================================================================================
+        elif 38 <= qtd_n_direta <= 41:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 3 ======================================================================================
+        elif 42 <= qtd_n_direta <= 44:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 3,5 ====================================================================================
+        elif 45 <= qtd_n_direta <= 47:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 4 ======================================================================================
+        elif 48 <= qtd_n_direta <= 49:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 4,5 ====================================================================================
+        elif 50 <= qtd_n_direta <= 51:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 5,5 ====================================================================================
+        elif 52 <= qtd_n_direta <= 55:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 6 ======================================================================================
+        elif qtd_n_direta == 56:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 6,5 ====================================================================================
+        elif 57 <= qtd_n_direta <= 58:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 7 ======================================================================================
+        elif qtd_n_direta == 59:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 7,5 ====================================================================================
+        elif qtd_n_direta == 60:
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 8 ======================================================================================
+        elif 61 <= qtd_n_direta <= 62:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 8,5 ====================================================================================
+        elif qtd_n_direta == 63:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 9 ======================================================================================
+        elif qtd_n_direta == 64:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 9,5 ====================================================================================
+        elif qtd_n_direta == 65:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 10 =====================================================================================
+        elif qtd_n_direta == 66:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+
+# ============================ 10,5 ===================================================================================
+        elif qtd_n_direta == 67:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 11 =====================================================================================
+        elif qtd_n_direta == 68:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 12 =====================================================================================
+        elif qtd_n_direta == 69:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 12,5 ===================================================================================
+        elif qtd_n_direta == 70:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 13 =====================================================================================
+        elif qtd_n_direta == 71:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 14 =====================================================================================
+        elif qtd_n_direta == 72:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 14,5 ===================================================================================
+        elif qtd_n_direta == 73:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 15,5 ===================================================================================
+        elif qtd_n_direta == 74:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 16 =====================================================================================
+        elif qtd_n_direta == 75:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 17 =====================================================================================
+        elif qtd_n_direta == 76:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 18 =====================================================================================
+        elif qtd_n_direta == 77:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 19 =====================================================================================
+        elif qtd_n_direta == 78:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 20 =====================================================================================
+        elif qtd_n_direta == 79:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 21 =====================================================================================
+        elif qtd_n_direta == 80:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 22,5 ===================================================================================
+        elif qtd_n_direta == 81:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 23,5 ===================================================================================
+        elif qtd_n_direta == 82:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 24,5 ===================================================================================
+        elif qtd_n_direta == 83:
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 26 =====================================================================================
+        elif qtd_n_direta == 84:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 27,5 ===================================================================================
+        elif qtd_n_direta == 85:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 29 =====================================================================================
+        elif qtd_n_direta == 86:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 30,5 ===================================================================================
+        elif qtd_n_direta == 87:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 32 =====================================================================================
+        elif qtd_n_direta == 88:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 34 =====================================================================================
+        elif qtd_n_direta == 89:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 36 =====================================================================================
+        elif qtd_n_direta == 90:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 37,5 ===================================================================================
+        elif qtd_n_direta == 91:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 40 =====================================================================================
+        elif qtd_n_direta == 92:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 42 =====================================================================================
+        elif qtd_n_direta == 93:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 44 =====================================================================================
+        elif qtd_n_direta == 94:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 46,5 ===================================================================================
+        elif qtd_n_direta == 95:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 49 =====================================================================================
+        elif qtd_n_direta == 96:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 52 =====================================================================================
+        elif qtd_n_direta == 97:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 54,5 ===================================================================================
+        elif qtd_n_direta == 98:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+
+# ============================ 57,5 ===================================================================================
+        elif qtd_n_direta == 99:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 60,5 ===================================================================================
+        elif qtd_n_direta == 100:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 64 =====================================================================================
+        elif qtd_n_direta == 101:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 67,5 ===================================================================================
+        elif qtd_n_direta == 102:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 71 =====================================================================================
+        elif qtd_n_direta == 103:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 75 =====================================================================================
+        elif qtd_n_direta == 104:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 79 =====================================================================================
+        elif qtd_n_direta == 105:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+
+# ============================ 83,5 ===================================================================================
+        elif qtd_n_direta == 106:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ 88 =====================================================================================
+        elif qtd_n_direta == 107:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 92,5 ===================================================================================
+        elif qtd_n_direta == 108:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 97,5 ===================================================================================
+        elif qtd_n_direta == 109:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 103 ====================================================================================
+        elif qtd_n_direta == 110:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=1 * mult, interval=0.1)
+
+# ============================ 108,5 ==================================================================================
+        elif qtd_n_direta == 111:
+            pyautogui.moveTo(f25)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=4 * mult, interval=0.1)
+            pyautogui.moveTo(f2e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=3 * mult, interval=0.1)
+            pyautogui.moveTo(f0e5)
+            pyautogui.click()
+            pyautogui.moveTo(direta[num2])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+            pyautogui.moveTo(direta[num1])
+            pyautogui.click(clicks=2 * mult, interval=0.1)
+
+# ============================ Condições de Parada ====================================================================
+        sleep(15)
+
+        if qtd_jogos >= 50000:
+            break
